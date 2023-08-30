@@ -15,7 +15,7 @@ use App\Http\Controllers\ScrapeController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('movie.index');
 });
 
 Route::any('/scrape', [ScrapeController::class,'scrape'])->name('scrape');

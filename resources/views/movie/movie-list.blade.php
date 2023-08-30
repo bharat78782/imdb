@@ -37,6 +37,10 @@
                             <td><a href="{{$item->year}}" target="_blank">{{$item->url}}</a></td>
                         </tr>
                         @endforeach
+                        @else
+                        <tr >
+                            <td colspan="5" style="text-align:center;">No data found</td>
+                        </tr>
                         @endif
                     </tbody>
                 </table>
@@ -91,7 +95,6 @@
             success: function(response) {
                 console.log(response);
                 $('.container').waitMe('hide');
-               
                 toastr.success('Success');
                 setInterval(function () {location.reload()}, 1000);
              
