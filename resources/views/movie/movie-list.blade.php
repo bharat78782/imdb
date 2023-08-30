@@ -15,8 +15,7 @@
         <div class="row">
             <div class="col-md-12">
                 <h1 class="mb-4">Movie List</h1>
-                <a href="#!" class="btn btn-success mb-3 add">Add Movie</a>
-                <a href="{{route('movie-list')}}" class="btn btn-primary mb-3">Without Js Movie List</a>
+                <a href="{{route('scrape')}}" class="btn btn-success mb-3 add">Add Movie</a>
                 <table class="table table-striped table-hover data-table" id="table">
                     <thead>
                         <tr>
@@ -28,8 +27,25 @@
                         </tr>
                     </thead>
                     <tbody>
+                       @if(count($data)>0)
+                        @foreach($data as $key => $item) 
+                        <tr>
+                            <td>{{$key+1}}</td>
+                            <td>{{$item->title}}</td>
+                            <td>{{$item->year}}</td>
+                            <td>{{$item->rating}}</td>
+                            <td><a href="{{$item->year}}" target="_blank">{{$item->url}}</a></td>
+                        </tr>
+                        @endforeach
+                        @endif
                     </tbody>
                 </table>
+
+                <nav aria-label="Page navigation example" style="float:right">
+                <ul class="pagination">
+                {!! $data->links() !!}
+                </ul>
+                </nav>
             </div>
         </div>
     </div>
@@ -57,21 +73,7 @@
                 });
             }
 
-        $(function () {
-            var table = $('.data-table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: "{{ route('movie') }}",
-                columns: [
-                    { data: 'id', name: 'id' },
-                    { data: 'title', name: 'title' },
-                    { data: 'year', name: 'year' },
-                    { data: 'rating', name: 'rating' },
-                    { data: 'url', name: 'url' },
-                   
-                ]
-            });
-        });
+       
         // toastr.success('asas');
         $(document).on('click','.add',function(e){
             e.preventDefault();
@@ -85,14 +87,13 @@
             $.ajax({
             type: "POST",
             url: "{{route('scrape')}}",
-            data: {type:"1"},
+            data: {type:"0"},
             success: function(response) {
                 console.log(response);
                 $('.container').waitMe('hide');
-                var table = $('.data-table').DataTable();
-                table.ajax.reload();
-                
+               
                 toastr.success('Success');
+                setInterval(function () {location.reload()}, 1000);
              
 
             },

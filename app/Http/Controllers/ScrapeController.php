@@ -29,10 +29,16 @@ class ScrapeController extends Controller
 
         return view('movie.index');
      }
-    public function scrape()
+
+     public function movieList()
+     {
+        $data = Movie::paginate(10);
+        return view('movie.movie-list',compact('data'));
+     }
+    public function scrape(Request $request)
         {
             
-
+            // return $request->all();
             $url = "https://www.imdb.com/chart/top";
     
             $client = new Client();
@@ -74,7 +80,13 @@ class ScrapeController extends Controller
                         try {
                             Movie::create($movieData);
                             $insertedCount++;
-                            return array("message"=>'Data inserted successfully for movie','type'=>'success');
+                            if($request->type == 0)
+                            {
+                                return array("message"=>'Data inserted successfully for movie','type'=>'success');
+                            }else{
+                                return array("message"=>'Data inserted successfully for movie','type'=>'success');
+
+                            }
                         } catch (\Exception $e) {
                             return array("message"=>'Error inserting data for movie'. $e->getMessage(),'type'=>'error');
                         }
