@@ -19,5 +19,7 @@ Route::get('/', function () {
 });
 
 Route::any('/scrape', [ScrapeController::class,'scrape'])->name('scrape');
+Route::any('/with-out-js-scrape', [ScrapeController::class,'withOutJsScrape'])->name('with-out-js-scrape');
+
 Route::get('/movie', [ScrapeController::class,'movie'])->name('movie');
 Route::get('/movie-list', [ScrapeController::class,'movieList'])->name('movie-list');
