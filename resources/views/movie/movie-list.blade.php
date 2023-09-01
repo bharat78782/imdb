@@ -15,7 +15,7 @@
         <div class="row">
             <div class="col-md-12">
                 <h1 class="mb-4">Movie List</h1>
-                <a href="{{route('with-out-js-scrape')}}" class="btn btn-success mb-3">Add Movie</a>
+                <a href="#!" class="btn btn-success mb-3 add">Add Movie</a>
                 <table class="table table-striped table-hover data-table" id="table">
                     <thead>
                         <tr>

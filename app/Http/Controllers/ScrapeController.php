@@ -43,25 +43,25 @@ class ScrapeController extends Controller
             $url = "https://www.imdb.com/chart/top";
     
             $client = new Client();
-            $crawler = $client->request('GET', $url);
+            $scrapeData = $client->request('GET', $url);
             $moviesData = [];
 
             $existingTitles = Movie::pluck('title')->toArray();
             $insertedCount = 0;
 
             try {
-                $crawler->filter('.ipc-metadata-list-summary-item')->each(function ($node) use (&$moviesData, $existingTitles, &$insertedCount) {
+                $scrapeData->filter('.ipc-metadata-list-summary-item')->each(function ($value) use (&$moviesData, $existingTitles, &$insertedCount) {
                     if ($insertedCount >= 10) {
-                        return; // Stop collecting data after inserting 10 entries
+                        return; 
                     }
 
-                    $title = $node->filter('.ipc-title__text')->text();
+                    $title = $value->filter('.ipc-title__text')->text();
 
-                    // Check if the title is already in the database
+                   
                     if (!in_array($title, $existingTitles)) {
-                        $year = $node->filter('.cli-title-metadata-item')->eq(0)->text();
-                        $ratingNode = $node->filter('.ipc-rating-star--base'); // Adjust the selector
-                        $rating = $ratingNode->attr('aria-label'); // Get the 'aria-label' attribute
+                        $year = $value->filter('.cli-title-metadata-item')->eq(0)->text();
+                        $rating = $value->filter('.ipc-rating-star--base'); 
+                        $rating = $rating->attr('aria-label'); 
 
                         // Extract the numeric part of the rating from the 'aria-label' attribute
                         preg_match('/([\d.]+)/', $rating, $matches);
@@ -69,7 +69,7 @@ class ScrapeController extends Controller
                             $rating = $matches[0];
                         }
 
-                        $url = "https://www.imdb.com" . $node->filter('.ipc-title-link-wrapper')->attr('href');
+                        $url = "https://www.imdb.com" . $value->filter('.ipc-title-link-wrapper')->attr('href');
 
                         $movieData = [
                             'title' => $title,
@@ -79,16 +79,13 @@ class ScrapeController extends Controller
                         ];
 
                         try {
+                            \DB::transaction(function () use ($movieData) {
                             Movie::create($movieData);
                             // dispatch(new ScrapeMovies($movieData));
-                            $insertedCount++;
-                            if($request->type == 0)
-                            {
-                                return array("message"=>'Data inserted successfully for movie','type'=>'success');
-                            }else{
-                                return array("message"=>'Data inserted successfully for movie','type'=>'success');
-
-                            }
+                        });
+                        $insertedCount++;
+                        return array("message"=>'Data inserted successfully for movie','type'=>'success');
+                           
                         } catch (\Exception $e) {
                             return array("message"=>'Error inserting data for movie'. $e->getMessage(),'type'=>'error');
                         }
@@ -110,25 +107,25 @@ class ScrapeController extends Controller
             $url = "https://www.imdb.com/chart/top";
     
             $client = new Client();
-            $crawler = $client->request('GET', $url);
+            $scrapeData = $client->request('GET', $url);
             $moviesData = [];
 
             $existingTitles = Movie::pluck('title')->toArray();
             $insertedCount = 0;
 
             try {
-                $crawler->filter('.ipc-metadata-list-summary-item')->each(function ($node) use (&$moviesData, $existingTitles, &$insertedCount) {
+                $scrapeData->filter('.ipc-metadata-list-summary-item')->each(function ($value) use (&$moviesData, $existingTitles, &$insertedCount) {
                     if ($insertedCount >= 10) {
                         return; // Stop collecting data after inserting 10 entries
                     }
 
-                    $title = $node->filter('.ipc-title__text')->text();
+                    $title = $value->filter('.ipc-title__text')->text();
 
                     // Check if the title is already in the database
                     if (!in_array($title, $existingTitles)) {
-                        $year = $node->filter('.cli-title-metadata-item')->eq(0)->text();
-                        $ratingNode = $node->filter('.ipc-rating-star--base'); // Adjust the selector
-                        $rating = $ratingNode->attr('aria-label'); // Get the 'aria-label' attribute
+                        $year = $value->filter('.cli-title-metadata-item')->eq(0)->text();
+                        $ratingvalue = $value->filter('.ipc-rating-star--base'); // Adjust the selector
+                        $rating = $ratingvalue->attr('aria-label'); // Get the 'aria-label' attribute
 
                         // Extract the numeric part of the rating from the 'aria-label' attribute
                         preg_match('/([\d.]+)/', $rating, $matches);
@@ -136,7 +133,7 @@ class ScrapeController extends Controller
                             $rating = $matches[0];
                         }
 
-                        $url = "https://www.imdb.com" . $node->filter('.ipc-title-link-wrapper')->attr('href');
+                        $url = "https://www.imdb.com" . $value->filter('.ipc-title-link-wrapper')->attr('href');
 
                         $movieData = [
                             'title' => $title,

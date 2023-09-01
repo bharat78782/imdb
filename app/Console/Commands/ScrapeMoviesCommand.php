@@ -4,6 +4,9 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Jobs\ScrapeMovies;
+use Illuminate\Support\Facades\Log;
+use Goutte\Client;
+use App\Models\Movie;
 class ScrapeMoviesCommand extends Command
 {
     /**
@@ -26,7 +29,7 @@ class ScrapeMoviesCommand extends Command
     public function handle()
     {
         $job = dispatch(new ScrapeMovies());
-        $jobId = $job->getJobId();
+        // $jobId = $job->getJobId();
         $this->info('Scraping job dispatched successfully.');
     }
 }

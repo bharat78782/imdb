@@ -16,12 +16,15 @@ class ScrapeMovies implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $movie;
+    public $insertedCount = 0;
     /**
      * Create a new job instance.
      */
-    public function __construct($movie)
+    public function __construct()
     {
-        $this->movie = $movie;
+       
+        // $this->movie = $movie;
     }
 
     /**
@@ -29,66 +32,62 @@ class ScrapeMovies implements ShouldQueue
      */
     public function handle(): void
     {
-        $jobId = $this->job->getJobId();
-        Log::info("Processing job with ID: $jobId");
+        
+       
+        $url = "https://www.imdb.com/chart/top";
+        
+        $client = new Client();
+        $scrapeData = $client->request('GET', $url);
+        $moviesData = [];
 
-        $movieData = [
-            'title' =>"as",
-            'year' => "as",
-            'rating' => "asa",
-            'url' => "asas",
-        ];
-        Movie::Create($movieData);
-        // return;
-    $url = "https://www.imdb.com/chart/top";
-    
-    $client = new Client();
-    $crawler = $client->request('GET', $url);
-    $moviesData = [];
+        $existingTitles = Movie::pluck('title')->toArray();
+         
 
-    $existingTitles = Movie::pluck('title')->toArray();
-    $insertedCount = 0;
-
-     try {
-        $crawler->filter('.ipc-metadata-list-summary-item')->each(function ($node) use (&$moviesData, $existingTitles, &$insertedCount) {
-            if ($insertedCount >= 10) {
-                return; 
-            }
-
-            $title = $node->filter('.ipc-title__text')->text();
-
-            if (!in_array($title, $existingTitles)) {
-                $year = $node->filter('.cli-title-metadata-item')->eq(0)->text();
-                $ratingNode = $node->filter('.ipc-rating-star--base'); 
-                $rating = $ratingNode->attr('aria-label');
-
-               
-                preg_match('/([\d.]+)/', $rating, $matches);
-                if (!empty($matches)) {
-                    $rating = $matches[0];
+        try {
+            $insert = $this->insertedCount ;
+            $scrapeData->filter('.ipc-metadata-list-summary-item')->each(function ($value) use (&$moviesData, $existingTitles, &$insert) {
+                if ($insert >= 10) {
+                    return; 
                 }
 
-                $url = "https://www.imdb.com" . $node->filter('.ipc-title-link-wrapper')->attr('href');
+                $title = $value->filter('.ipc-title__text')->text();
 
-                $movieData = [
-                    'title' => $title,
-                    'year' => $year,
-                    'rating' => $rating,
-                    'url' => $url,
-                ];
+                if (!in_array($title, $existingTitles)) {
+                    $year = $value->filter('.cli-title-metadata-item')->eq(0)->text();
+                    $rating = $value->filter('.ipc-rating-star--base'); 
+                    $rating = $rating->attr('aria-label');
 
-                try {
-                    \DB::transaction(function () use ($movieData) {
-                        Movie::create($movieData);
-                        $insertedCount++;
-                    });
-                } catch (\Exception $e) {
-                    \Log::error('Error inserting data for movie: ' . $e->getMessage());
+                
+                    preg_match('/([\d.]+)/', $rating, $matches);
+                    if (!empty($matches)) {
+                        $rating = $matches[0];
+                    }
+
+                    $url = "https://www.imdb.com" . $value->filter('.ipc-title-link-wrapper')->attr('href');
+
+                    $movieData = [
+                        'title' => $title,
+                        'year' => $year,
+                        'rating' => $rating,
+                        'url' => $url,
+                    ];
+
+                    try {
+                        \DB::transaction(function () use ($movieData) {
+                            Movie::create($movieData);
+                            $insert++;
+                        });
+                    } catch (\Exception $e) {
+                        \Log::error('Error inserting data for movie: ' . $e->getMessage());
+                    }
                 }
+            });
+            } catch (\Exception $e) {
+                \Log::error('An error occurred during scraping: ' . $e->getMessage());
             }
-        });
-        } catch (\Exception $e) {
-            \Log::error('An error occurred during scraping: ' . $e->getMessage());
-        }
+
+
+
+           
     }
 }

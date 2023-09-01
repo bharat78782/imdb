@@ -1,0 +1,6 @@
+Assignment Instructions:
+
+Begin by executing the "migrate" command.
+After that run the "php artisan schedule:run" command.
+Finally in the terminal, execute the command "php artisan queue:work."
+In this assignment, both scheduled and manual functions are used with the DataTable.

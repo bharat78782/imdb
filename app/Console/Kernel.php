@@ -16,8 +16,8 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('scrape:movies')->everySecond();	
         
+        $schedule->command('scrape:movies')->everyMinute();
         // $schedule->command('scrape:movies')->dailyAt('12:00');
     }
 
